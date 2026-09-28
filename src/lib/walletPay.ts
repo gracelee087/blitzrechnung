@@ -11,7 +11,7 @@ import { toBaseUnits } from "./money";
 interface InjectedWallet {
   publicKey?: PublicKey | null;
   connect: () => Promise<{ publicKey: PublicKey }>;
-  signAndSendTransaction: (tx: Transaction) => Promise<{ signature: string }>;
+  signTransaction: (tx: Transaction) => Promise<Transaction>;
 }
 
 export function getInjectedWallet(): InjectedWallet | null {
@@ -59,8 +59,13 @@ export async function payWithBrowserWallet(
     transfer,
   );
   tx.feePayer = payer;
-  tx.recentBlockhash = (await connection.getLatestBlockhash("confirmed")).blockhash;
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
+  tx.recentBlockhash = blockhash;
 
-  const { signature } = await wallet.signAndSendTransaction(tx);
+  // The wallet only signs; we send through our own RPC so the transaction goes to the
+  // app's cluster (devnet by default) even if the wallet would pick another network.
+  const signed = await wallet.signTransaction(tx);
+  const signature = await connection.sendRawTransaction(signed.serialize());
+  await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
   return signature;
 }
