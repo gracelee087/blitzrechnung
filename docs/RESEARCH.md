@@ -20,8 +20,7 @@ These are the numbers that are safe to put on slides, each with its source. Item
 - Source: https://stripe.com/en-DE/pricing
 
 **SWIFT from outside the EEA:**
-- About a week, up to 14 days, plus about €12.50–20 in bank fees.
-- ⚠️ This comes via Wise, which is a competitor: https://wise.com/en-de/blog/sparkasse-international-transfer
+- ❌ Removed (28 Sep 2026): the only source was Wise, a competitor, and we could not verify a transfer time. Do not use a SWIFT duration in the pitch.
 
 ## Problem: admin time
 
@@ -41,13 +40,13 @@ These are the numbers that are safe to put on slides, each with its source. Item
 
 ## Competition
 
-No tool was found that combines German-compliant invoices, stablecoin payment and a DATEV export.
+⚠️ Corrected (28 Sep 2026): we have **not** verified that no tool combines German-compliant invoices, stablecoin payment and a DATEV export, so we make no "only tool" claim. Existing tools to be aware of:
 
-| Tool | German invoices / E-Rechnung | DATEV | Stablecoin payments | Fees |
-|---|---|---|---|---|
-| sevdesk, Lexware Office, Qonto, Finom | ✅ | ✅ | ❌ | Monthly plan |
-| MoonPay Commerce (ex-Helio) | ❌ | ❌ (CSV only) | ✅ | 2% (1% premium) |
-| Request Finance | ❌ | not found | ✅ | from $50/month |
+- **Request Finance** — stablecoin invoicing; also has a free plan (not only "from $50/month"). DATEV support not verified. https://www.requestfinance.com/pricing
+- **Acctual** — invoices payable by card, bank or stablecoin. https://www.acctual.com/
+- **MoonPay Commerce (ex-Helio)** — stablecoin payments.
+- **CoinTracking** — crypto records with accounting exports including DATEV. https://cointracking.info/for-corporate
+- **sevdesk, Lexware Office, Qonto, Finom** — German invoicing and DATEV; stablecoin payment not verified.
 
 ## Risks, stated honestly
 
