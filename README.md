@@ -4,6 +4,7 @@
 
 Built for the *Build an MVP with Solana at WHU* hackathon (Superteam Germany, 2026).
 
+- 🎬 Demo video: https://www.youtube.com/watch?v=yeXYH9YpkxU
 - Live app (Solana devnet, test money): https://blitzrechnung-one.vercel.app
 - Pitch deck (PDF): [pitch-deck.pdf](pitch-deck.pdf)
 - Builder: Sohee Lee · X [@ChachaL10757287](https://x.com/ChachaL10757287)
