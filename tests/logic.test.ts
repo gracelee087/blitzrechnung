@@ -150,6 +150,21 @@ test("German tax notes per client type", async () => {
   assert.equal(revenueAccountFor("eu", prof), "8336");
 });
 
+test("PayPal fee estimate and average detection time", async () => {
+  const { paypalFeeEstimate, avgDetectionSeconds } = await import("../src/lib/stats");
+  assert.equal(paypalFeeEstimate("1500.00", "intl"), "74.70"); // 4.98 %
+  assert.equal(paypalFeeEstimate("1000.00", "eu"), "29.90"); // 2.99 %
+  const base = { currency: "USD" as const, clientType: "intl" as const, clientVatId: "", issueDate: "2026-09-28", dueDate: "2026-10-12", clientName: "Nova Labs", clientEmail: "", description: "x", net: "15.00", vatRate: 0 as const, gross: "15.00", reference: "r", number: "RE-1" };
+  const invoices: Invoice[] = [
+    { ...base, id: "1", status: "paid", paidAt: "2026-09-28T12:00:00.000Z", detectedAt: "2026-09-28T12:00:02.000Z" },
+    { ...base, id: "2", status: "paid", paidAt: "2026-09-28T12:00:00.000Z", detectedAt: "2026-09-28T12:00:04.000Z" },
+    { ...base, id: "3", status: "paid", paidAt: "2026-09-28T12:00:00.000Z" }, // not watched live → ignored
+    { ...base, id: "4", status: "open" },
+  ];
+  assert.equal(avgDetectionSeconds(invoices), 3);
+  assert.equal(avgDetectionSeconds([]), null);
+});
+
 test("USDC mint is used for USD invoices", async () => {
   const { tokenFor } = await import("../src/lib/config");
   assert.equal(tokenFor("EUR").symbol, "EURC");

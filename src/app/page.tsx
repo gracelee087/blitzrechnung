@@ -5,13 +5,14 @@ import { Connection } from "@solana/web3.js";
 import BigNumber from "bignumber.js";
 import { Shell } from "@/components/Shell";
 import { StatusBadge } from "@/components/StatusBadge";
-import { RPC_URL, tokenFor } from "@/lib/config";
+import { RPC_URL, explorerTxUrl, tokenFor } from "@/lib/config";
 import { loadInvoices, saveInvoices, useInvoices, useProfile } from "@/lib/storage";
 import { checkPayment } from "@/lib/verify";
 import { buildDatevCsv } from "@/lib/datev";
 import { formatMoney } from "@/lib/money";
 import type { Invoice, Profile } from "@/lib/types";
 import { localDate } from "@/lib/dates";
+import { avgDetectionSeconds, paypalFeeEstimate } from "@/lib/stats";
 
 export default function Dashboard() {
   const storedInvoices = useInvoices();
@@ -76,10 +77,23 @@ export default function Dashboard() {
         .filter((t, idx) => idx === 0 || t.v.gt(0))
         .map((t) => formatMoney(t.v.toFixed(2), t.c))
         .join(" · ");
+    const paidList = invoices.filter((i) => i.status === "paid");
+    const saved = (["EUR", "USD"] as const)
+      .map((c) => ({
+        c,
+        v: paidList
+          .filter((i) => i.currency === c)
+          .reduce((a, i) => a.plus(paypalFeeEstimate(i.gross, i.clientType ?? "de")), new BigNumber(0)),
+      }))
+      .filter((t, idx) => idx === 0 || t.v.gt(0))
+      .map((t) => formatMoney(t.v.toFixed(2), t.c))
+      .join(" · ");
     return {
-      paid: sum(invoices.filter((i) => i.status === "paid")),
+      paid: sum(paidList),
       open: sum(invoices.filter((i) => i.status !== "paid")),
-      count: invoices.filter((i) => i.status === "paid").length,
+      count: paidList.length,
+      saved,
+      avgSeconds: avgDetectionSeconds(invoices),
     };
   }, [invoices]);
 
@@ -121,7 +135,7 @@ export default function Dashboard() {
 
   return (
     <Shell>
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+      <div className="mb-4 grid gap-4 sm:grid-cols-3">
         <div className="card p-5">
           <p className="label">Received</p>
           <p className="text-2xl font-bold">{totals.paid}</p>
@@ -142,6 +156,21 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <div className="mb-6 grid gap-4 sm:grid-cols-2">
+        <div className="card p-5">
+          <p className="label">Saved vs. PayPal (est.)</p>
+          <p className="text-2xl font-bold text-accent">{totals.saved}</p>
+          <p className="text-xs text-muted">PayPal Checkout 2.99 % + 1.99 % outside the EEA, fixed fee not counted</p>
+        </div>
+        <div className="card p-5">
+          <p className="label">Avg. time to &ldquo;Paid&rdquo;</p>
+          <p className="text-2xl font-bold text-accent">
+            {totals.avgSeconds === null ? "—" : `${totals.avgSeconds.toFixed(1)} s`}
+          </p>
+          <p className="text-xs text-muted">From the Solana block to this app showing Paid</p>
+        </div>
+      </div>
+
       <div className="card overflow-hidden">
         <div className="flex items-center justify-between border-b border-line px-5 py-3">
           <h2 className="font-semibold">Invoices</h2>
@@ -159,8 +188,8 @@ export default function Dashboard() {
         ) : (
           <ul>
             {invoices.map((i) => (
-              <li key={i.id} className="border-b border-line last:border-0">
-                <Link href={`/invoice?id=${i.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-paper">
+              <li key={i.id} className="flex items-center border-b border-line last:border-0 hover:bg-paper">
+                <Link href={`/invoice?id=${i.id}`} className="flex min-w-0 flex-1 items-center gap-4 px-5 py-4">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold">{i.clientName}</p>
                     <p className="truncate text-sm text-muted">
@@ -170,6 +199,16 @@ export default function Dashboard() {
                   <p className="font-semibold tabular-nums">{formatMoney(i.gross, i.currency)}</p>
                   <StatusBadge status={i.status} dueDate={i.dueDate} />
                 </Link>
+                {i.signature && (
+                  <a
+                    href={explorerTxUrl(i.signature)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 pr-5 text-xs text-accent underline"
+                  >
+                    On-chain ↗
+                  </a>
+                )}
               </li>
             ))}
           </ul>

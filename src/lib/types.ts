@@ -38,6 +38,7 @@ export interface Invoice {
   reference: string; // Solana Pay reference key (base58)
   status: InvoiceStatus;
   paidAt?: string; // ISO timestamp from the block time
+  detectedAt?: string; // ISO timestamp when the invoice page first saw the payment
   signature?: string; // transaction signature
   payer?: string; // wallet that paid
   receivedGross?: string; // what actually arrived (for underpaid)

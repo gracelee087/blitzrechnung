@@ -36,6 +36,7 @@ function InvoiceView() {
       ...inv,
       status: result.state,
       paidAt: result.paidAt ?? new Date().toISOString(),
+      detectedAt: inv.detectedAt ?? new Date().toISOString(),
       signature: result.signature,
       payer: result.payer ?? undefined,
       receivedGross: result.received,
